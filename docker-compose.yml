@@ -30,3 +30,60 @@ services:
       KAFKA_HEALTHCHECK_PORT: 9091
     depends_on:
       - zoo
+
+# Wesley
+  wesley-mysql:
+    image: mysql
+    container_name: wesley-mysql
+    restart: on-failure
+    environment:
+      MYSQL_ROOT_PASSWORD: 532c5b0a-2cd9-4eed-ad10-6dcdea6e732b
+      MYSQL_USER: archiver
+      MYSQL_PASSWORD: c0d9f4f4-f978-4ff3-98a7-8a30a182bbd9
+      MYSQL_DATABASE: metadata
+    # volumes:
+    #   - ./containervolumes/wesley-mysql:/var/lib/mysql
+
+  cassandra1:
+    image: cassandra
+    container_name: cassandra1
+    restart: on-failure
+    environment:
+      CASSANDRA_SEEDS: cassandra1,cassandra2
+    # volumes:
+    #   - ./containervolumes/cassandra1/data:/opt/cassandra/data
+
+  cassandra2:
+    image: cassandra
+    container_name: cassandra2
+    restart: on-failure
+    environment:
+      CASSANDRA_SEEDS: cassandra1,cassandra2
+    # volumes:
+    #   - ./containervolumes/cassandra2/data:/opt/cassandra/data
+
+  wesley:
+    image: cfei/wesley:0.3
+    container_name: wesley
+    restart: on-failure
+    environment:
+      KAFKA_SUBDB: /var/log/wesley/kafka_subscriptions.txt
+      KAFKA_BROKERS: kafkaf:9092
+      KAFKA_GROUP: uniten_archiver
+      KAFKA_PREFIX: uniten_archiver
+      MYSQL_HOST: wesley-mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: archiver
+      MYSQL_PASSWORD: "${WESLEY_MYSQL_PASSWORD}"
+      MYSQL_DATABASE: metadata
+      CASSANDRA_HOSTS: cassandra1,cassandra2
+      CASSANDRA_PORT: 9042
+      CASSANDRA_KEYSPACE: data
+      CASSANDRA_TABLE_PREFIX: prefix_is_currently_hardcoded
+    volumes:
+      - ./containervolumes/wesley-logs:/var/log/wesley
+    depends_on:
+      - wesley-mysql
+      - cassandra1
+      - cassandra2
+      - kafka
