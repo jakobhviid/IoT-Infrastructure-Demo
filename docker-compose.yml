@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  zoo:
+    image: cfei/zookeeper:1.1.0
+    container_name: zoo
+    restart: on-failure
+    ports:
+      - 2181:2181
+    environment:
+      ZOO_ID: 1
+      ZOO_PORT: 2181
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888
+
+  kafka:
+    image: cfei/kafka:2.0.0-beta
+    container_name: kafka
+    restart: on-failure
+    ports:
+      - 9091:9091
+      - 9092:9092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zoo:2181/kafka
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER_LISTENER:PLAINTEXT"
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9091,EXTERNAL://0.0.0.0:9092,DOCKER_LISTENER://0.0.0.0:19092
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:9091,EXTERNAL://${HOST_DNS}:9092,DOCKER_LISTENER://kafka:19092"
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_HEAP_OPTS: "-Xmx${KAFKA_RAM}G"
+      KAFKA_HEALTHCHECK_PORT: 9091
+    depends_on:
+      - zoo
