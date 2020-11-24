@@ -137,12 +137,11 @@ async def main ():
         mainmeter = 'topic%d' % randrange(1000000)
         triple = (
             '<%s>' % entity,
-#            'test:blah',
             'rdf:label',
             '"%s"' % mainmeter,
         )
         iresult = await insert('%s %s %s .' % (triple[0], triple[1], triple[2]))
-        print(json.dumps(iresult, sort_keys=True, indent=4, separators=(',', ': ')))
+#        print(json.dumps(iresult, sort_keys=True, indent=4, separators=(',', ': ')))
         print('Named stream "%s"' % mainmeter)
     
     for row in result['results']:
