@@ -8,7 +8,7 @@ from time import sleep
 from aiokafka import AIOKafkaProducer
 from aiokafka import AIOKafkaConsumer
 
-local_name = 'init-client'
+local_name = 'simulate-submeter-client'
 SLEEP_TIME = 1
 
 def ent (local_name):
