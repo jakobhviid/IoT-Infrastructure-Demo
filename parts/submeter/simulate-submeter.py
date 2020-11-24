@@ -43,8 +43,7 @@ async def transcieve (local_name, remote_name, question):
     return result
 
 async def transmit (topic, value):
-    message = str(value)
-    await producer.send_and_wait(topic, bytes(json.dumps(message).encode('utf-8')))
+    await producer.send_and_wait(topic, bytes(json.dumps(value).encode('utf-8')))
 
 async def query (select_clause, where_clause):
     query = '''
