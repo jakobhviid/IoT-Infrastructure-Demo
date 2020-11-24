@@ -6,6 +6,7 @@ import json
 import asyncio
 from aiokafka import AIOKafkaProducer
 from aiokafka import AIOKafkaConsumer
+from random import randrange
 
 local_name = 'simulate-mainmeter-client'
 SLEEP_TIME = 60
@@ -45,6 +46,30 @@ async def transcieve (local_name, remote_name, question):
 
 async def transmit (topic, value):
     await producer.send_and_wait(topic, bytes(json.dumps(value).encode('utf-8')))
+
+async def insert (insert_clause=None, delete_clause=None, where_clause=None):
+    insert_part = 'INSERT {\n'+insert_clause+'\n}' if insert_clause else ''
+    delete_part = 'DELETE {\n'+delete_clause+'\n}' if delete_clause else ''
+    where_part  = where_clause if where_clause else ''
+    
+    update = '''
+    PREFIX brick: <http://buildsys.org/ontologies/Brick#>
+    PREFIX bf:    <http://buildsys.org/ontologies/BrickFrame#>
+    PREFIX bdk:   <https://brickschema.org/schema/1.0.1/BrickDataKafka#>
+    PREFIX test:  <http://sdu.dk/ontologies/delme#>
+    
+    %s
+    %s
+    WHERE {
+        %s
+    }
+    ''' % (insert_part, delete_part, where_part)
+    question = {
+        'update': update,
+    }
+    result = await transcieve(local_name, 'update', question)
+    
+    return result
 
 async def query (select_clause, where_clause):
     query = '''
@@ -91,17 +116,34 @@ async def main ():
         ?submeter  rdf:label ?sublabel .
         OPTIONAL { ?mainmeter rdf:label ?mainlabel . } .
     '''
-    result = await query('?mainlabel ?sublabel', where_clause)
+    result = await query('?mainlabel ?sublabel ?mainmeter', where_clause)
     print(json.dumps(result, sort_keys=True, indent=4, separators=(',', ': ')))
     
     mains = []
+    entities = []
     for row in result['results']:
         mainmeter = row[0]
-        if not mainmeter in mains: mains.append(mainmeter)
+        entity = row[2]
+        if not mainmeter in mains:
+            mains.append(mainmeter)
+            entities.append(entity)
     
     print('Found %d matches' % len(mains))
     mainmeter = mains[0]
+    entity = entities[0]
     print('Using "%s"' % mainmeter)
+    
+    if mainmeter=='None':
+        mainmeter = 'topic%d' % randrange(1000000)
+        triple = (
+            '<%s>' % entity,
+#            'test:blah',
+            'rdf:label',
+            '"%s"' % mainmeter,
+        )
+        iresult = await insert('%s %s %s .' % (triple[0], triple[1], triple[2]))
+        print(json.dumps(iresult, sort_keys=True, indent=4, separators=(',', ': ')))
+        print('Named stream "%s"' % mainmeter)
     
     for row in result['results']:
         if row[0] != mainmeter: continue

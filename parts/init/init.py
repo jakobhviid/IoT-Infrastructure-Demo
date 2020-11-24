@@ -114,7 +114,7 @@ async def main ():
         (meter2, feedsElectricity, lamp2),
         (meter1, label, '"meter1"'),
         (meter2, label, '"meter2"'),
-        (meter3, label, '"meter3"'),
+#        (meter3, label, '"meter3"'),
     ]
     
     for triple in triples:
