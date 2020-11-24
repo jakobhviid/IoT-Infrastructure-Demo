@@ -44,8 +44,7 @@ async def transcieve (local_name, remote_name, question):
     return result
 
 async def transmit (topic, value):
-    message = str(value)
-    await producer.send_and_wait(topic, bytes(json.dumps(message).encode('utf-8')))
+    await producer.send_and_wait(topic, bytes(json.dumps(value).encode('utf-8')))
 
 async def query (select_clause, where_clause):
     query = '''
@@ -73,7 +72,7 @@ async def consume (submeter_topic, mainmeter_topic):
     async for msg in consumer:
         current[submeter_topic] = json.loads(msg.value.decode('utf-8'))
         
-        s = str(sum(map(lambda key: current[key], current.keys())))
+        s = sum(map(lambda key: current[key], current.keys()))
         c = '[%s]' % ' '.join(map(lambda key: str(current[key]), current.keys()))
         print('%s <- %s (%s) %s' % (mainmeter_topic, s, submeter_topic, c))
         await transmit(mainmeter_topic, s)
