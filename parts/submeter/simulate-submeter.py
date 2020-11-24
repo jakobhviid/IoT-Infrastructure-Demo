@@ -75,7 +75,7 @@ async def main ():
         ?room rdf:label "%s" .
         ?room brick:contains ?lamp .
         ?meter brick:feedsElectricity ?lamp .
-        ?meter rdf:label ?label
+        ?meter rdf:label ?label .
     ''' % room
     result = await query('?label', where_clause)
 #    print(json.dumps(result, sort_keys=True, indent=4, separators=(',', ': ')))
