@@ -107,7 +107,7 @@ async def main ():
         (room1, contains, lamp1),
         (room2, contains, lamp2),
         (room1, label, '"Room1"'),
-        (room2, label, '"Room1"'),
+        (room2, label, '"Room2"'),
         (meter3, feedsElectricity, meter1),
         (meter3, feedsElectricity, meter2),
         (meter1, feedsElectricity, lamp1),
